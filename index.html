@@ -1,38 +1,72 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title>Talha - Candy Crush</title>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Meine Spieleliste</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      max-width: 400px;
+      margin: 20px auto;
+    }
+    li {
+      background: #fff;
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    li:hover {
+      background: #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Meine Spiele</h1>
+  <ul>
+    <li onclick="startGame(1)">Spiel 1 – Platzhaltertext</li>
+    <li onclick="startGame(2)">Spiel 2 – Platzhaltertext</li>
+    <li onclick="startGame(3)">Spiel 3 – Platzhaltertext</li>
+    <li onclick="startGame(4)">Spiel 4 – Platzhaltertext</li>
+  </ul>
 
-    <!-- 👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻-->
-    <!-- Also uploaded the demo of this code in a gif : https://c.tenor.com/x8v1oNUOmg4AAAAd/tenor.gif-->
-    <!-- 👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻-->
-
-    <!-- 👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻-->
-    <!-- More html-css-js Games Calculators Games Cards Elements Projects on https://www.github.com/he-is-talha --> 
-    <!-- 👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻-->
-
-    <link rel="icon" href="https://i.ibb.co/M6KTWnf/pic.jpg">
-
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400&display=swap" rel="stylesheet">
-    <script src="script.js" charset="utf-8"></script>
-  </head>
-  <body>
-    <!-- Mode Selection Screen -->
-    <div id="modeSelection">
-      <h2>Choose Game Mode</h2>
-      <button id="endlessMode">Endless Mode</button>
-      <button id="timedMode">Timed Mode</button>
-    </div>
-    <!-- Scoreboard with Timer and Change Mode Button -->
-    <div class="scoreBoard">
-      <h3>score</h3>
-      <h1 id="score">0</h1>
-      <div id="timer"></div>
-      <button id="changeMode">Change Mode</button>
-    </div>
-    <!-- Game Grid -->
-    <div class="grid"></div>
-  </body>
+  <script>
+    function startGame(gameId) {
+      // Hier kannst du den Code einfügen, der dein Spiel startet.
+      // Zum Beispiel: Dateien laden, ein Canvas öffnen, oder eine Funktion triggern.
+      alert("Spiel " + gameId + " wird gestartet!");
+      
+      // Beispiel: unterschiedliche Aktionen pro Spiel
+      switch(gameId) {
+        case 1:
+          // Code für Spiel 1
+          console.log("Starte Spiel 1...");
+          break;
+        case 2:
+          // Code für Spiel 2
+          console.log("Starte Spiel 2...");
+          break;
+        case 3:
+          // Code für Spiel 3
+          console.log("Starte Spiel 3...");
+          break;
+        case 4:
+          // Code für Spiel 4
+          console.log("Starte Spiel 4...");
+          break;
+      }
+    }
+  </script>
+</body>
 </html>
