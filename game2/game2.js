@@ -31,7 +31,7 @@ quoteInputElement.addEventListener("input", () => {
     }
   });
 
-  let randomNumber = Math.round(count * 60  / (getTimerTime() * 5) * 10) / 10;
+  let randomNumber = Math.round(count * 60 / (getTimerTime() * 5) * 10) / 10;
 
   if (isNaN(randomNumber)) {
     wordsPerMinuteElement.textContent = "0";
@@ -43,7 +43,7 @@ quoteInputElement.addEventListener("input", () => {
 });
 
 function getRandomQuote() {
-  return fetch(RANDOM_QUOTE_API_URL) //RANDOM_QUOTE_API_URL
+  return fetch(RANDOM_QUOTE_API_URL)
     .then((response) => response.json())
     .then((data) => data.content)
     .catch(error => console.log(error));
@@ -66,8 +66,8 @@ function startTimer() {
   timerElement.textContent = 0;
   startTime = new Date();
   setInterval(() => {
-    timer.textContent = getTimerTime();
-  }, 1000)
+    timerElement.textContent = getTimerTime();
+  }, 1000);
 }
 
 function getTimerTime() {
