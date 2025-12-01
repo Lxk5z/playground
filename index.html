@@ -59,38 +59,11 @@
 <body>
   <h1>Meine Playgrounds</h1>
   <ul>
-    <li onclick="startGame(1)">Spiel 1 – </li>
-    <li onclick="startGame(2)">Spiel 2 – Platzhaltertext</li>
-    <li onclick="startGame(3)">Spiel 3 – Platzhaltertext</li>
-    <li onclick="startGame(4)">Spiel 4 – Platzhaltertext</li>
+  <li onclick="window.location.href='game1/game1.html'">Spiel 1</li>
+  <li onclick="window.location.href='game2/game2.html'">Spiel 2</li>
+  <li onclick="window.location.href='game3/game3.html'">Spiel 3</li>
+  <li onclick="window.location.href='game4/game4.html'">Spiel 4</li>
   </ul>
-
-  <script>
-    function startGame(gameId) {
-      // Hier kannst du den Code einfügen, der dein Spiel startet.
-      // Zum Beispiel: Dateien laden, ein Canvas öffnen, oder eine Funktion triggern.
-      alert("Spiel " + gameId + " wird gestartet!");
-      
-      // Beispiel: unterschiedliche Aktionen pro Spiel
-      switch(gameId) {
-        case 1:
-          // Code für Spiel 1
-          console.log("Starte Spiel 1...");
-          break;
-        case 2:
-          // Code für Spiel 2
-          console.log("Starte Spiel 2...");
-          break;
-        case 3:
-          // Code für Spiel 3
-          console.log("Starte Spiel 3...");
-          break;
-        case 4:
-          // Code für Spiel 4
-          console.log("Starte Spiel 4...");
-          break;
-      }
-    }
-  </script>
+  
 </body>
 </html>
