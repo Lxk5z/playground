@@ -2,11 +2,8 @@ body {
     background: #A9A9A9;  
 }
 
-.stream-container {
-  width: 620px;
-  background: black;
-  height: 378px;
-  margin: 0 auto;
+.iframe-container {
+  position: center;
 }
 
 .stream-container iframe {
