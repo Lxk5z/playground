@@ -1,0 +1,10 @@
+.stream-container {
+  width: 620px;
+  height: 378px;
+  margin: 0 auto;
+}
+
+.stream-container iframe {
+  width: 100%;
+  height: 100%;
+}
