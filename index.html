@@ -9,6 +9,22 @@
   <meta charset="UTF-8">
   <title>Meine Playgrounds</title>
   <style>
+    /* ===================================
+   🚫 Text markieren & Long-Press aus
+=================================== */
+* {
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Inputs dürfen natürlich weiterhin Text auswählen */
+input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+    
     body {
       font-family: Arial, sans-serif;
       background: url("background.png") no-repeat center center fixed;
