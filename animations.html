@@ -13,6 +13,22 @@
 
   
   <style>
+	  /* ===================================
+   🚫 Text markieren & Long-Press aus
+=================================== */
+* {
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Inputs dürfen natürlich weiterhin Text auswählen */
+input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+	  
     * {
 	border: 0;
 	box-sizing: border-box;
