@@ -28,9 +28,9 @@
             overflow: hidden;
             width: 100vw;
             height: 100vh;
-            height: 100dvh; /* Nutzt den absolut verfügbaren Platz */
+            height: 100dvh;
             cursor: default;
-            /* Sorgt dafür, dass der Inhalt bis unter die Statusleiste rutscht */
+            /* Drückt den Inhalt in die Safe-Areas, aber lässt den Hintergrund fließen */
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
@@ -41,7 +41,6 @@
             background: transparent;
         }
 
-        /* Haupt-Video (1px gegen Standbild-Bug) */
         #cameraStream {
             position: absolute;
             top: 0; left: 0;
@@ -172,9 +171,7 @@
         const bgInput = document.getElementById('bgInput');
 
         async function initCamera() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
+            if (stream) { stream.getTracks().forEach(track => track.stop()); }
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ 
                     video: { facingMode: currentFacingMode, width: { ideal: 1920 }, height: { ideal: 1080 } }, 
@@ -204,23 +201,21 @@
                 reader.onload = (ev) => {
                     const img = new Image();
                     img.onload = () => {
-                        // 1. Hintergrundbild setzen
                         document.body.style.backgroundImage = `url('${ev.target.result}')`;
                         
-                        // 2. Den oberen mittleren Pixel analysieren
+                        // Pixel-Analyse für Statusleisten-Tarnung
                         const colorCanvas = document.createElement('canvas');
                         const colorCtx = colorCanvas.getContext('2d');
                         colorCanvas.width = img.width;
                         colorCanvas.height = img.height;
                         colorCtx.drawImage(img, 0, 0);
                         
-                        // Farbe des Pixels oben in der Mitte auslesen
+                        // Pickt den Pixel oben mittig
                         const pixelData = colorCtx.getImageData(Math.floor(img.width / 2), 0, 1, 1).data;
                         const rgbColor = `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
                         
-                        // 3. Body-Farbe anpassen, um Statusleiste zu tarnen
                         document.body.style.backgroundColor = rgbColor;
-                        console.log("Statusleisten-Tarnung aktiv: " + rgbColor);
+                        console.log("Statusleiste getarnt mit: " + rgbColor);
                     };
                     img.src = ev.target.result;
                 };
