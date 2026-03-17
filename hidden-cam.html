@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hidden Cam</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Hidden Cam Pro</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
@@ -33,11 +35,11 @@
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: 100;
-            background: transparent; /* Versteckt aber klickbar */
+            background: transparent;
         }
 
-        /* Fix für Standbild: Video muss "aktiv" im Viewport sein */
-        video {
+        /* Haupt-Video (1px gegen Standbild-Bug) */
+        #cameraStream {
             position: absolute;
             top: 0; left: 0;
             width: 1px; height: 1px;
@@ -45,17 +47,12 @@
             pointer-events: none;
         }
 
-        canvas {
-            position: absolute;
-            display: none;
-        }
-
         #menu {
             display: none; 
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            padding: 25px;
+            padding: 20px;
             border-radius: 24px;
             text-align: center;
             z-index: 150;
@@ -66,14 +63,14 @@
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
             flex-direction: column;
             align-items: center;
-            min-width: 280px;
+            min-width: 300px;
         }
 
         .menu-btn {
             width: 100%;
-            padding: 16px;
-            margin: 8px 0;
-            font-size: 17px;
+            padding: 14px;
+            margin: 6px 0;
+            font-size: 16px;
             border-radius: 14px;
             cursor: pointer;
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -87,36 +84,35 @@
             gap: 10px;
         }
 
-        .menu-btn:active {
-            transform: scale(0.96);
-            background: rgba(255, 255, 255, 0.2);
-        }
+        .menu-btn:active { transform: scale(0.96); background: rgba(255, 255, 255, 0.2); }
 
-        /* Hintergrund-Zeile */
-        .bg-row {
-            display: flex;
+        /* Kamera-Vorschau Bereich */
+        #previewContainer {
+            margin-top: 15px;
             width: 100%;
+            display: flex;
             gap: 10px;
-            margin-top: 8px;
+            align-items: center;
         }
 
-        .delete-btn {
+        #miniPreview {
+            width: 100%;
+            height: 120px;
+            background: #000;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .switch-btn {
             width: 60px;
-            background: rgba(240, 42, 32, 0.583);
-            border: 1px solid rgba(200, 30, 21, 0.771);
-        }
-        .delete-btn:active {
-            background: rgba(229, 70, 62, 0.671);
+            height: 120px;
+            font-size: 24px;
         }
 
-        #statusText {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 14px;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
+        .bg-row { display: flex; width: 100%; gap: 10px; margin-top: 6px; }
+        .delete-btn { width: 60px; background: rgba(240, 42, 32, 0.4); border: 1px solid rgba(200, 30, 21, 0.5); }
+        #statusText { color: rgba(255, 255, 255, 0.5); font-size: 12px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
         #bgInput { display: none; }
     </style>
 </head>
@@ -126,7 +122,7 @@
     <input type="file" id="bgInput" accept="image/*">
 
     <video id="cameraStream" autoplay playsinline muted></video>
-    <canvas id="photoCanvas"></canvas>
+    <canvas id="photoCanvas" style="display:none;"></canvas>
 
     <div id="menu">
         <div id="statusText">Bereit</div>
@@ -134,7 +130,6 @@
         <div id="mainOptions" style="width: 100%;">
             <button class="menu-btn" onclick="startVideoMode(event)">🎥 Video starten</button>
             <button class="menu-btn" onclick="startPhotoMode(event)">📸 Foto-Modus</button>
-            
             <div class="bg-row">
                 <button class="menu-btn" onclick="triggerBgUpload(event)">🖼️ Hintergrund</button>
                 <button class="menu-btn delete-btn" onclick="resetBackground(event)">🗑️</button>
@@ -142,12 +137,18 @@
         </div>
 
         <div id="videoOptions" style="display:none; width: 100%;">
-            <button class="menu-btn" style="color: #ff453a;" onclick="stopAndSaveVideo(event)">💾 Video sichern</button>
+        <button class="menu-btn" style="color: #32d74b;" onclick="stopAndSaveVideo(event)">💾 Video sichern</button>
+        <button class="menu-btn delete-btn" style="width: 100%; margin-top: 10px;" onclick="cancelRecording(event)">🚫 Aufnahme abbrechen</button>
         </div>
 
         <div id="photoOptions" style="display:none; width: 100%;">
             <button class="menu-btn" style="color: #32d74b;" onclick="savePhotosToZip(event)">📦 Fotos sichern (.zip)</button>
-            <button class="menu-btn" onclick="exitPhotoMode(event)">Abbrechen</button>
+            <button class="menu-btn delete-btn" style="width: 100%; margin-top: 10px;" onclick="exitPhotoMode(event)">🚫 Fotomodus abbrechen</button>
+        </div>
+
+        <div id="previewContainer">
+            <video id="miniPreview" autoplay playsinline muted></video>
+            <button class="menu-btn switch-btn" onclick="switchCamera(event)">🔄</button>
         </div>
     </div>
 
@@ -158,55 +159,52 @@
         let photoBlobs = [];
         let currentMode = 'none';
         let cameraInitialized = false;
+        let currentFacingMode = 'environment';
         
         const videoEl = document.getElementById('cameraStream');
+        const miniPreview = document.getElementById('miniPreview');
         const canvas = document.getElementById('photoCanvas');
         const ctx = canvas.getContext('2d');
         const menu = document.getElementById('menu');
         const initOverlay = document.getElementById('initOverlay');
         const bgInput = document.getElementById('bgInput');
 
-        // --- 1. System-Initialisierung ---
         async function initCamera() {
-            if (cameraInitialized) return;
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }, 
+                    video: { facingMode: currentFacingMode, width: { ideal: 1920 }, height: { ideal: 1080 } }, 
                     audio: true 
                 });
                 videoEl.srcObject = stream;
+                miniPreview.srcObject = stream;
                 cameraInitialized = true;
                 initOverlay.style.display = 'none';
-                console.log("System bereit 🥷");
             } catch (err) {
                 alert("Kamera-Fehler: " + err);
             }
         }
 
-        // --- 2. Hintergrund Funktionen ---
-        function triggerBgUpload(e) {
+        async function switchCamera(e) {
             e.stopPropagation();
-            bgInput.click();
+            currentFacingMode = (currentFacingMode === 'environment') ? 'user' : 'environment';
+            await initCamera();
         }
 
+        function triggerBgUpload(e) { e.stopPropagation(); bgInput.click(); }
         bgInput.onchange = (e) => {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (event) => {
-                    document.body.style.backgroundImage = `url('${event.target.result}')`;
-                };
+                reader.onload = (ev) => document.body.style.backgroundImage = `url('${ev.target.result}')`;
                 reader.readAsDataURL(file);
             }
         };
 
-        function resetBackground(e) {
-            e.stopPropagation();
-            document.body.style.backgroundImage = 'none';
-            document.body.style.backgroundColor = 'black';
-        }
+        function resetBackground(e) { e.stopPropagation(); document.body.style.backgroundImage = 'none'; document.body.style.backgroundColor = 'black'; }
 
-        // --- 3. Geste & Klicks ---
         function handleGlobalClick(e) {
             if (!cameraInitialized) { initCamera(); return; }
             if (menu.style.display === 'flex') {
@@ -233,11 +231,8 @@
             if (touchStartY - currentY > 60) { openMenu(); isThreeFingers = false; }
         });
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key.toLowerCase() === 'm') openMenu();
-        });
+        document.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'm') openMenu(); });
 
-        // --- 4. Aufnahme-Logik ---
         function openMenu() {
             menu.style.display = 'flex';
             const status = document.getElementById('statusText');
@@ -257,15 +252,10 @@
         function startVideoMode(e) {
             e.stopPropagation();
             videoChunks = [];
-            // Nutze passendes Format für Apple
             const mimeType = MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' : 'video/webm';
             mediaRecorder = new MediaRecorder(stream, { mimeType });
-            
-            mediaRecorder.ondataavailable = (ev) => {
-                if (ev.data.size > 0) videoChunks.push(ev.data);
-            };
-
-            mediaRecorder.start(1000); // Speichert alle 1 Sekunde einen Chunk (hilft gegen Datenverlust)
+            mediaRecorder.ondataavailable = (ev) => { if (ev.data.size > 0) videoChunks.push(ev.data); };
+            mediaRecorder.start(1000);
             currentMode = 'recording';
             menu.style.display = 'none';
         }
@@ -274,9 +264,8 @@
             e.stopPropagation();
             mediaRecorder.onstop = () => {
                 const blob = new Blob(videoChunks, { type: 'video/mp4' });
-                const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
-                a.href = url;
+                a.href = URL.createObjectURL(blob);
                 a.download = `Video_${Date.now()}.mp4`;
                 a.click();
             };
@@ -296,10 +285,7 @@
 
         function takePhoto() {
             ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
-            canvas.toBlob((blob) => {
-                photoBlobs.push(blob);
-                console.log("Klick! 📸");
-            }, 'image/jpeg', 0.95);
+            canvas.toBlob((blob) => { photoBlobs.push(blob); }, 'image/jpeg', 0.95);
         }
 
         async function savePhotosToZip(e) {
@@ -315,11 +301,20 @@
             exitPhotoMode(e);
         }
 
-        function exitPhotoMode(e) {
-            if(e) e.stopPropagation();
-            currentMode = 'none';
-            menu.style.display = 'none';
-        }
+        function exitPhotoMode(e) { if(e) e.stopPropagation(); currentMode = 'none'; menu.style.display = 'none'; }
+        
+        function cancelRecording(e) {
+    e.stopPropagation();
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        // Wir überschreiben onstop, damit beim Stoppen KEIN Download kommt
+        mediaRecorder.onstop = null; 
+        mediaRecorder.stop();
+    }
+    videoChunks = []; // Daten löschen
+    currentMode = 'none';
+    menu.style.display = 'none';
+    console.log("Aufnahme verworfen 🗑️");
+}
     </script>
 </body>
 </html>
