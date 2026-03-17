@@ -26,11 +26,11 @@
             color: white;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             overflow: hidden;
-    
-            /* FIX für Fullscreen */
             width: 100vw;
             height: 100vh;
             height: 100dvh; /* Nutzt den absolut verfügbaren Platz */
+            cursor: default;
+            /* Sorgt dafür, dass der Inhalt bis unter die Statusleiste rutscht */
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
@@ -89,7 +89,6 @@
 
         .menu-btn:active { transform: scale(0.96); background: rgba(255, 255, 255, 0.2); }
 
-        /* Kamera-Vorschau Bereich */
         #previewContainer {
             margin-top: 15px;
             width: 100%;
@@ -140,8 +139,8 @@
         </div>
 
         <div id="videoOptions" style="display:none; width: 100%;">
-        <button class="menu-btn" style="color: #32d74b;" onclick="stopAndSaveVideo(event)">💾 Video sichern</button>
-        <button class="menu-btn delete-btn" style="width: 100%; margin-top: 10px;" onclick="cancelRecording(event)">🚫 Aufnahme abbrechen</button>
+            <button class="menu-btn" style="color: #32d74b;" onclick="stopAndSaveVideo(event)">💾 Video sichern</button>
+            <button class="menu-btn delete-btn" style="width: 100%; margin-top: 10px;" onclick="cancelRecording(event)">🚫 Aufnahme abbrechen</button>
         </div>
 
         <div id="photoOptions" style="display:none; width: 100%;">
@@ -197,16 +196,43 @@
         }
 
         function triggerBgUpload(e) { e.stopPropagation(); bgInput.click(); }
+        
         bgInput.onchange = (e) => {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (ev) => document.body.style.backgroundImage = `url('${ev.target.result}')`;
+                reader.onload = (ev) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        // 1. Hintergrundbild setzen
+                        document.body.style.backgroundImage = `url('${ev.target.result}')`;
+                        
+                        // 2. Den oberen mittleren Pixel analysieren
+                        const colorCanvas = document.createElement('canvas');
+                        const colorCtx = colorCanvas.getContext('2d');
+                        colorCanvas.width = img.width;
+                        colorCanvas.height = img.height;
+                        colorCtx.drawImage(img, 0, 0);
+                        
+                        // Farbe des Pixels oben in der Mitte auslesen
+                        const pixelData = colorCtx.getImageData(Math.floor(img.width / 2), 0, 1, 1).data;
+                        const rgbColor = `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
+                        
+                        // 3. Body-Farbe anpassen, um Statusleiste zu tarnen
+                        document.body.style.backgroundColor = rgbColor;
+                        console.log("Statusleisten-Tarnung aktiv: " + rgbColor);
+                    };
+                    img.src = ev.target.result;
+                };
                 reader.readAsDataURL(file);
             }
         };
 
-        function resetBackground(e) { e.stopPropagation(); document.body.style.backgroundImage = 'none'; document.body.style.backgroundColor = 'black'; }
+        function resetBackground(e) { 
+            e.stopPropagation(); 
+            document.body.style.backgroundImage = 'none'; 
+            document.body.style.backgroundColor = 'black'; 
+        }
 
         function handleGlobalClick(e) {
             if (!cameraInitialized) { initCamera(); return; }
@@ -277,6 +303,17 @@
             menu.style.display = 'none';
         }
 
+        function cancelRecording(e) {
+            e.stopPropagation();
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.onstop = null; 
+                mediaRecorder.stop();
+            }
+            videoChunks = [];
+            currentMode = 'none';
+            menu.style.display = 'none';
+        }
+
         function startPhotoMode(e) {
             e.stopPropagation();
             currentMode = 'photo';
@@ -305,19 +342,6 @@
         }
 
         function exitPhotoMode(e) { if(e) e.stopPropagation(); currentMode = 'none'; menu.style.display = 'none'; }
-        
-        function cancelRecording(e) {
-    e.stopPropagation();
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-        // Wir überschreiben onstop, damit beim Stoppen KEIN Download kommt
-        mediaRecorder.onstop = null; 
-        mediaRecorder.stop();
-    }
-    videoChunks = []; // Daten löschen
-    currentMode = 'none';
-    menu.style.display = 'none';
-    console.log("Aufnahme verworfen 🗑️");
-}
     </script>
 </body>
 </html>
