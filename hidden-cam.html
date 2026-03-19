@@ -30,7 +30,6 @@
             height: 100vh;
             height: 100dvh;
             cursor: default;
-            /* Drückt den Inhalt in die Safe-Areas, aber lässt den Hintergrund fließen */
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
@@ -170,21 +169,33 @@
         const initOverlay = document.getElementById('initOverlay');
         const bgInput = document.getElementById('bgInput');
 
-        async function initCamera() {
+        // Dynamische Kamera-Initialisierung (Foto = kein Audio = kein Ton!)
+        async function initCamera(withAudio = false) {
             if (stream) { stream.getTracks().forEach(track => track.stop()); }
             try {
+                // Bei Foto-Modus erzwingen wir audio: false gegen den iOS Mute-Ton
+                const useAudio = currentMode === 'recording' || withAudio;
+                
                 stream = await navigator.mediaDevices.getUserMedia({ 
                     video: { facingMode: currentFacingMode, width: { ideal: 1920 }, height: { ideal: 1080 } }, 
-                    audio: true 
+                    audio: useAudio 
                 });
                 videoEl.srcObject = stream;
                 miniPreview.srcObject = stream;
                 cameraInitialized = true;
                 initOverlay.style.display = 'none';
             } catch (err) {
-                alert("Kamera-Fehler: " + err);
+                console.log("Kamera-Fehler: " + err);
             }
         }
+
+        // AUTO-RECONNECT beim Zurückkehren zum Tab
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                console.log("Willkommen zurück! Kamera wird reaktiviert...");
+                initCamera();
+            }
+        });
 
         async function switchCamera(e) {
             e.stopPropagation();
@@ -202,20 +213,13 @@
                     const img = new Image();
                     img.onload = () => {
                         document.body.style.backgroundImage = `url('${ev.target.result}')`;
-                        
-                        // Pixel-Analyse für Statusleisten-Tarnung
                         const colorCanvas = document.createElement('canvas');
                         const colorCtx = colorCanvas.getContext('2d');
-                        colorCanvas.width = img.width;
-                        colorCanvas.height = img.height;
+                        colorCanvas.width = img.width; colorCanvas.height = img.height;
                         colorCtx.drawImage(img, 0, 0);
-                        
-                        // Pickt den Pixel oben mittig
                         const pixelData = colorCtx.getImageData(Math.floor(img.width / 2), 0, 1, 1).data;
                         const rgbColor = `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
-                        
                         document.body.style.backgroundColor = rgbColor;
-                        console.log("Statusleiste getarnt mit: " + rgbColor);
                     };
                     img.src = ev.target.result;
                 };
@@ -240,6 +244,7 @@
 
         document.addEventListener('click', handleGlobalClick);
 
+        // Geste
         let touchStartY = 0;
         let isThreeFingers = false;
         document.addEventListener('touchstart', (e) => {
@@ -273,35 +278,39 @@
             else status.innerText = "Bereit";
         }
 
-        function startVideoMode(e) {
+        async function startVideoMode(e) {
             e.stopPropagation();
+            currentMode = 'recording';
+            // Für Video brauchen wir Audio -> kurz neu starten
+            await initCamera(true);
+            
             videoChunks = [];
             const mimeType = MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' : 'video/webm';
             mediaRecorder = new MediaRecorder(stream, { mimeType });
             mediaRecorder.ondataavailable = (ev) => { if (ev.data.size > 0) videoChunks.push(ev.data); };
             mediaRecorder.start(1000);
-            currentMode = 'recording';
             menu.style.display = 'none';
         }
 
         function stopAndSaveVideo(e) {
             e.stopPropagation();
-            mediaRecorder.onstop = () => {
+            mediaRecorder.onstop = async () => {
                 const blob = new Blob(videoChunks, { type: 'video/mp4' });
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
                 a.download = `Video_${Date.now()}.mp4`;
                 a.click();
+                currentMode = 'none';
+                await initCamera(false); // Zurück auf "No-Audio"
             };
             mediaRecorder.stop();
-            currentMode = 'none';
             menu.style.display = 'none';
         }
 
         function cancelRecording(e) {
             e.stopPropagation();
             if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                mediaRecorder.onstop = null; 
+                mediaRecorder.onstop = () => { initCamera(false); };
                 mediaRecorder.stop();
             }
             videoChunks = [];
@@ -309,9 +318,10 @@
             menu.style.display = 'none';
         }
 
-        function startPhotoMode(e) {
+        async function startPhotoMode(e) {
             e.stopPropagation();
             currentMode = 'photo';
+            await initCamera(false); // Foto-Modus explizit OHNE Audio
             photoBlobs = [];
             canvas.width = videoEl.videoWidth || 1920;
             canvas.height = videoEl.videoHeight || 1080;
